@@ -15,9 +15,11 @@ public class HelloController {
 	public String printWelcome(ModelMap model) {
 		List<String> messages = new ArrayList<>();
 		messages.add("Hello!");
-		messages.add("I'm Spring MVC application");
-		messages.add("5.2.0 version by sep'19 ");
+		messages.add("I'm CRUD application");
+		messages.add("Initial lines added in Datainitializer");
+		messages.add("Table is trunicated PreDestroy");
 //		messages.add("Click <a href=\"/cars\">here</a> to see the list of cars.");
+		messages.add("Click <a href=\"/users\">here</a> to see the list of users.");
 		model.addAttribute("messages", messages);
 		return "index";
 	}

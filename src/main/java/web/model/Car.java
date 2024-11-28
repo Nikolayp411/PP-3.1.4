@@ -1,4 +1,4 @@
-package web.car_back;
+package web.model;
 
 public class Car {
     private String manifacturer;
