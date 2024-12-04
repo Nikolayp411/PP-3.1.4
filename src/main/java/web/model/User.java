@@ -2,6 +2,9 @@ package web.model;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -19,12 +22,17 @@ public class User {
     @Column(name = "email")
     private String email;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    private Role role;
+
     public User() {}
 
-    public User(String firstName, String lastName, String email) {
+    public User(String firstName, String lastName, String email, Role role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.role = role;
     }
 
     public Long getId() {
@@ -59,13 +67,22 @@ public class User {
         this.email = email;
     }
 
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
     @Override
     public String toString() {
-        return "User{" +
+        return "User {" +
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
+                ", role=" + role +
                 '}';
     }
 }

@@ -11,4 +11,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Transactional
     @Query(value = "TRUNCATE TABLE users", nativeQuery = true)
     void truncate();
+
+    @Modifying
+    @Transactional
+    @Query(value = "ALTER TABLE users AUTO_INCREMENT = 1;", nativeQuery = true)
+    void incrementNullification();
+
+
+    @Query("SELECT u FROM User u JOIN FETCH u.role WHERE u.email = :email")
+    User findByEmail(String email);
 }

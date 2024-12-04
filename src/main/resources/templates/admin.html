@@ -2,11 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Admin Panel</title>
 </head>
 <body>
+
+<h3>Admin Panel</h3>
+
+<form action="/logout" method="post" style="display:inline;">
+    <button type="submit">Logout</button>
+</form>
+
 <h3>Users</h3>
-<table border="1" cellpadding="5" cellspacing="0" style="width: 30%; margin-bottom: 20px;">
+<table border="1" cellpadding="5" cellspacing="0" style="width: 50%; margin-bottom: 20px;">
     <thead>
     <tr>
         <th>ID</th>
@@ -25,11 +32,11 @@
         <td th:text="${user.email}">Email</td>
         <td th:text="${user.role.name}">Role</td>
         <td>
-            <form action="/deleteUser" method="post" style="display:inline;">
+            <form action="/admin/deleteUser" method="post" style="display:inline;">
                 <input type="hidden" name="userId" th:value="${user.id}"/>
                 <button type="submit">Delete</button>
             </form>
-            <form action="/editUser" method="get" style="display:inline;">
+            <form action="/admin/editUser" method="get" style="display:inline;">
                 <input type="hidden" name="userId" th:value="${user.id}"/>
                 <button type="submit">Edit</button>
             </form>
@@ -37,21 +44,33 @@
     </tr>
     </tbody>
 </table>
+
 <h3>Add User</h3>
-<form action="/users" method="POST">
-    <input type="hidden" name="userId" th:value="${userId}"/>
+<form action="/admin" method="POST">
     <table>
         <tr>
             <td><label for="firstName">First Name:</label></td>
-            <td><input type="text" id="firstName" name="firstName" th:value="${firstName}" required></td>
+            <td><input type="text" id="firstName" name="firstName" required></td>
         </tr>
         <tr>
             <td><label for="lastName">Last Name:</label></td>
-            <td><input type="text" id="lastName" name="lastName" th:value="${lastName}" required></td>
+            <td><input type="text" id="lastName" name="lastName" required></td>
         </tr>
         <tr>
             <td><label for="email">Email:</label></td>
-            <td><input type="email" id="email" name="email" th:value="${email}" required></td>
+            <td><input type="email" id="email" name="email" required></td>
+        </tr>
+        <tr>
+            <td><label for="role">Role:</label></td>
+            <td>
+                <select id="role" name="role.id" required>
+                    <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}">Role</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="password">Password:</label>></td>
+            <td><input type="password" id="password" name="password" required></td>
         </tr>
         <tr>
             <td colspan="2">
@@ -60,5 +79,6 @@
         </tr>
     </table>
 </form>
+
 </body>
 </html>

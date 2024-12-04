@@ -14,10 +14,11 @@
     <p><strong>First Name:</strong> <span th:text="${user.firstName}"></span></p>
     <p><strong>Last Name:</strong> <span th:text="${user.lastName}"></span></p>
     <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+    <p><strong>Role:</strong> <span th:text="${user.role.name}"></span></p>
 </div>
 
 
-<form th:object="${user}" action="/users" method="POST">
+<form th:object="${user}" action="/admin/updateUser" method="POST">
     <input type="hidden" name="id" th:value="${user.id}"/>
     <table>
         <tr>
@@ -33,6 +34,18 @@
             <td><input type="email" id="email" name="email" th:value="${user.email}" required></td>
         </tr>
         <tr>
+            <td><label for="role">Role:</label></td>
+            <td>
+                <select id="role" name="role.id" required>
+                    <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}">Role</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="password">Password:</label></td>
+            <td><input type="password" id="password" name="password" placeholder="Leave blank to keep current password"></td>
+        </tr>
+        <tr>
             <td colspan="2">
                 <button type="submit" name="action" value="update">Update User</button>
             </td>
@@ -40,6 +53,6 @@
     </table>
 </form>
 
-<a href="/users">Back to User List</a>
+<a th:href="@{/admin}">Back</a>
 </body>
 </html>
