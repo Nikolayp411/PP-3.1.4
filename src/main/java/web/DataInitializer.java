@@ -30,7 +30,6 @@ public class DataInitializer {
     }
 
     private void initializeRoles() {
-        // Проверяем, существуют ли роли в базе данных
         if (roleRepository.count() == 0) {
             Role userRole = new Role("USER");
             Role adminRole = new Role("ADMIN");
@@ -40,11 +39,9 @@ public class DataInitializer {
     }
 
     private void initializeUsers() {
-        // Получаем роли из базы данных
         Role userRole = roleRepository.findByName("USER");
         Role adminRole = roleRepository.findByName("ADMIN");
 
-        // Проверяем, что роли существуют
         if (userRole != null && adminRole != null) {
             List<User> users = Arrays.asList(
                     createUser ("John", "Doe", "john.doe@example.com", "password123", userRole),
@@ -56,14 +53,14 @@ public class DataInitializer {
                     createUser ("admin", "admin", "admin@admin", "admin", adminRole)
             );
 
-            userRepository.saveAll(users); // Сохраняем пользователей
+            userRepository.saveAll(users);
         } else {
             System.out.println("Roles not found! Users will not be created.");
         }
     }
 
     private User createUser (String firstName, String lastName, String email, String password, Role role) {
-        User user = new User(firstName, lastName, email, List.of(role)); // Используем List.of для создания списка
+        User user = new User(firstName, lastName, email, List.of(role));
         user.setPassword(passwordEncoder.encode(password));
         return user;
     }

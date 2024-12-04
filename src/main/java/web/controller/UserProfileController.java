@@ -21,9 +21,8 @@ public class UserProfileController {
         String email = authentication.getName();
         User user = userService.findByEmail(email);
 
-        // Убедитесь, что роли инициализированы
         if (user.getRoles() == null) {
-            user.setRoles(new ArrayList<>()); // Инициализируем пустой список, если он null
+            user.setRoles(new ArrayList<>());
         }
 
         model.addAttribute("user", user);

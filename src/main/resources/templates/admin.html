@@ -34,10 +34,10 @@
                 <span th:if="${user.roles != null && !#lists.isEmpty(user.roles)}">
                     <span th:each="role, iterStat : ${user.roles}">
                         <span th:text="${role.name}">Role</span>
-                        <span th:if="${iterStat.index < user.roles.size() - 1}">, </span> <!-- Запятая между ролями -->
+                        <span th:if="${iterStat.index < user.roles.size() - 1}">, </span>
                     </span>
                 </span>
-            <span th:if="${user.roles == null || #lists.isEmpty(user.roles)}">No roles assigned</span> <!-- Сообщение, если ролей нет -->
+            <span th:if="${user.roles == null || #lists.isEmpty(user.roles)}">No roles assigned</span>
         </td>
         <td>
             <form action="/admin/deleteUser " method="post" style="display:inline;">

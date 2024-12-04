@@ -6,6 +6,5 @@ import web.model.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    //в оригинале это findbyusername но у нас юзернейм це емайл
     User findByEmail(String username);
 }

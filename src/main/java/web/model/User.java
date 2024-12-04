@@ -104,10 +104,6 @@ public class User implements UserDetails {
                 '}';
     }
 
-
-
-    //НАЧИНАЯ ОТСЮДА разобраться, имплиментацию не убирать
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return getRoles();
