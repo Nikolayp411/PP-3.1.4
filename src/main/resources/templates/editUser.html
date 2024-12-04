@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://thymeleaf.org">
-<html lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Edit User</title>
@@ -14,11 +13,13 @@
     <p><strong>First Name:</strong> <span th:text="${user.firstName}"></span></p>
     <p><strong>Last Name:</strong> <span th:text="${user.lastName}"></span></p>
     <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
-    <p><strong>Role:</strong> <span th:text="${user.role.name}"></span></p>
+    <p><strong>Roles:</strong>
+        <span th:each="role : ${user.roles}" th:text="${role.name}">Role</span>
+        <span th:if="${#lists.size(user.roles) > 1}">, </span>
+    </p>
 </div>
 
-
-<form th:object="${user}" action="/admin/updateUser" method="POST">
+<form th:object="${user}" th:action="@{/admin/updateUser}" method="POST">
     <input type="hidden" name="id" th:value="${user.id}"/>
     <table>
         <tr>
@@ -34,11 +35,13 @@
             <td><input type="email" id="email" name="email" th:value="${user.email}" required></td>
         </tr>
         <tr>
-            <td><label for="role">Role:</label></td>
+            <td><label>Roles:</label></td>
             <td>
-                <select id="role" name="role.id" required>
-                    <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}">Role</option>
-                </select>
+                <div th:each="role : ${roles}">
+                    <input type="checkbox" th:value="${role.id}" th:id="'role_' + ${role.id}" name="roleIds"
+                           th:checked="${#lists.contains(user.roles, role)}"/>
+                    <label th:for="'role_' + ${role.id}" th:text="${role.name}">Role</label>
+                </div>
             </td>
         </tr>
         <tr>
@@ -52,7 +55,7 @@
         </tr>
     </table>
 </form>
-
 <a th:href="@{/admin}">Back</a>
 </body>
 </html>
+

@@ -37,4 +37,7 @@ public class UserServiceImpl implements UserService {
     public User getUserById(Long userId) {
         return userRepository.findById(userId).orElse(null);
     }
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
 }

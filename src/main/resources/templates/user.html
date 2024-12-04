@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://thymeleaf.org" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>User Profile</title>
@@ -18,7 +18,7 @@
         <th>Name</th>
         <th>Last Name</th>
         <th>Email</th>
-        <th>Role</th>
+        <th>Roles</th>
     </tr>
     </thead>
     <tbody>
@@ -27,7 +27,15 @@
         <td th:text="${user.firstName}">Name</td>
         <td th:text="${user.lastName}">Last Name</td>
         <td th:text="${user.email}">Email</td>
-        <td th:text="${user.role.name}">Role</td>
+        <td>
+            <span th:if="${user.roles != null && !#lists.isEmpty(user.roles)}">
+                <span th:each="role, iterStat : ${user.roles}">
+                    <span th:text="${role.name}">Role</span>
+                    <span th:if="${iterStat.index < user.roles.size() - 1}">, </span> <!-- Запятая между ролями -->
+                </span>
+            </span>
+            <span th:if="${user.roles == null || #lists.isEmpty(user.roles)}">No roles assigned</span> <!-- Сообщение, если ролей нет -->
+        </td>
     </tr>
     </tbody>
 </table>

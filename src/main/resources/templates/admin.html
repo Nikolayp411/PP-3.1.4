@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://thymeleaf.org" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Admin Panel</title>
@@ -20,7 +20,7 @@
         <th>Name</th>
         <th>Last Name</th>
         <th>Email</th>
-        <th>Role</th>
+        <th>Roles</th>
         <th>Actions</th>
     </tr>
     </thead>
@@ -30,13 +30,21 @@
         <td th:text="${user.firstName}">Name</td>
         <td th:text="${user.lastName}">Last Name</td>
         <td th:text="${user.email}">Email</td>
-        <td th:text="${user.role.name}">Role</td>
         <td>
-            <form action="/admin/deleteUser" method="post" style="display:inline;">
+                <span th:if="${user.roles != null && !#lists.isEmpty(user.roles)}">
+                    <span th:each="role, iterStat : ${user.roles}">
+                        <span th:text="${role.name}">Role</span>
+                        <span th:if="${iterStat.index < user.roles.size() - 1}">, </span> <!-- Запятая между ролями -->
+                    </span>
+                </span>
+            <span th:if="${user.roles == null || #lists.isEmpty(user.roles)}">No roles assigned</span> <!-- Сообщение, если ролей нет -->
+        </td>
+        <td>
+            <form action="/admin/deleteUser " method="post" style="display:inline;">
                 <input type="hidden" name="userId" th:value="${user.id}"/>
                 <button type="submit">Delete</button>
             </form>
-            <form action="/admin/editUser" method="get" style="display:inline;">
+            <form action="/admin/editUser " method="get" style="display:inline;">
                 <input type="hidden" name="userId" th:value="${user.id}"/>
                 <button type="submit">Edit</button>
             </form>
@@ -44,7 +52,6 @@
     </tr>
     </tbody>
 </table>
-
 <h3>Add User</h3>
 <form action="/admin" method="POST">
     <table>
@@ -61,15 +68,16 @@
             <td><input type="email" id="email" name="email" required></td>
         </tr>
         <tr>
-            <td><label for="role">Role:</label></td>
+            <td><label>Roles:</label></td>
             <td>
-                <select id="role" name="role.id" required>
-                    <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}">Role</option>
-                </select>
+                <div th:each="role : ${roles}">
+                    <input type="checkbox" th:value="${role.id}" th:id="'role_' + ${role.id}" name="roleIds" />
+                    <label th:for="'role_' + ${role.id}" th:text="${role.name}">Role</label>
+                </div>
             </td>
         </tr>
         <tr>
-            <td><label for="password">Password:</label>></td>
+            <td><label for="password">Password:</label></td>
             <td><input type="password" id="password" name="password" required></td>
         </tr>
         <tr>

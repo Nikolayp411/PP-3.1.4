@@ -1,39 +1,37 @@
 package web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import web.model.Role;
 import web.model.User;
-import web.model.UserLoginInfo;
-import web.service.UserLoginInfoService;
 import web.service.UserService;
 import web.service.RoleService;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Controller
+@RequestMapping("/admin")
 public class AdminProfileController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    private RoleService roleService;
+    public AdminProfileController(UserService userService,
+                                  RoleService roleService,
+                                  PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.roleService = roleService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-    @Autowired
-    private UserLoginInfoService userLoginInfoService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @GetMapping("/admin")
+    @GetMapping
     public String adminPanel(Model model) {
         List<User> users = userService.listUsers();
         model.addAttribute("users", users);
@@ -43,26 +41,23 @@ public class AdminProfileController {
         return "admin";
     }
 
-    @PostMapping("/admin")
-    public String addUser(@ModelAttribute("user") User user, @RequestParam("password") String password) {
-        Role role = roleService.getRoleById(user.getRole().getId());
-        user.setRole(role);
-
+    @PostMapping
+    public String addUser(@ModelAttribute("user") User user,
+                          @RequestParam("password") String password,
+                          @RequestParam("roleIds") List<Long> roleIds) {
+        user.setRoles(roleService.getRolesById(roleIds));
+        user.setPassword(passwordEncoder.encode(password));
         userService.addUser(user);
-
-        UserLoginInfo userLoginInfo = new UserLoginInfo(user, user.getEmail(), passwordEncoder.encode(password));
-        userLoginInfoService.addUserLoginInfo(userLoginInfo);
-
         return "redirect:/admin";
     }
 
-    @PostMapping("/admin/deleteUser")
+    @PostMapping("/deleteUser")
     public String deleteUser(@RequestParam("userId") Long userId) {
         userService.deleteUser(userId);
         return "redirect:/admin";
     }
 
-    @GetMapping("/admin/editUser")
+    @GetMapping("/editUser")
     public String showEditUserForm(@RequestParam("userId") Long id, Model model) {
         User user = userService.getUserById(id);
         model.addAttribute("user", user);
@@ -71,17 +66,13 @@ public class AdminProfileController {
         return "editUser";
     }
 
-    @PostMapping("/admin/updateUser")
-    public String updateUser(@ModelAttribute("user") User user, @RequestParam("password") String password) {
-        Role role = roleService.getRoleById(user.getRole().getId());
-        user.setRole(role);
-
+    @PostMapping("/updateUser")
+    public String updateUser(@ModelAttribute("user") User user,
+                             @RequestParam("password") String password,
+                             @RequestParam("roleIds") List<Long> roleIds) {
+        user.setRoles(roleService.getRolesById(roleIds));
+        user.setPassword(passwordEncoder.encode(password));
         userService.updateUser(user);
-
-        UserLoginInfo userLoginInfo = userLoginInfoService.findByUserId(user.getId());
-        userLoginInfo.setPassword(passwordEncoder.encode(password));
-        userLoginInfoService.updateUserLoginInfo(userLoginInfo);
-
         return "redirect:/admin";
     }
 }

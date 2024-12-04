@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
-public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+public class SuccessUserHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
@@ -18,8 +18,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"))) {
             redirectUrl = "/admin";
-        } else {
+        } else if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("USER"))) {
             redirectUrl = "/user";
+        } else {
+            redirectUrl = "/";
         }
 
         response.sendRedirect(redirectUrl);

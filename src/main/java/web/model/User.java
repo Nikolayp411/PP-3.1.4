@@ -1,13 +1,14 @@
 package web.model;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,20 +20,25 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @Column (name = "password")
+    private String password;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Collection<Role> roles;
 
     public User() {}
 
-    public User(String firstName, String lastName, String email, Role role) {
+    public User(String firstName, String lastName, String email, Collection<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.role = role;
+        this.roles = roles;
     }
 
     public Long getId() {
@@ -67,22 +73,82 @@ public class User {
         this.email = email;
     }
 
-    public Role getRole() {
-        return role;
+    @Override
+    public String getPassword() {
+        return password;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setPassword(String password) {
+        this.password = password;
     }
+
+    public Collection<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Collection<Role> roles) {
+        this.roles = roles;
+    }
+
+
 
     @Override
     public String toString() {
-        return "User {" +
+        return "User{" +
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
-                ", role=" + role +
+                ", password='" + password + '\'' +
+                ", roles=" + roles +
                 '}';
+    }
+
+
+
+    //НАЧИНАЯ ОТСЮДА разобраться, имплиментацию не убирать
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return getRoles();
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(email, user.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return email != null ? email.hashCode() : 0;
     }
 }

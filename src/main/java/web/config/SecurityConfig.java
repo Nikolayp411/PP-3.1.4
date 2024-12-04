@@ -15,11 +15,14 @@ import web.service.CustomUserDetailsService;
 @Configuration
 public class SecurityConfig {
 
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final SuccessUserHandler successHandler;
 
     @Autowired
-    private CustomAuthenticationSuccessHandler successHandler;
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService, SuccessUserHandler successHandler) {
+        this.customUserDetailsService = customUserDetailsService;
+        this.successHandler = successHandler;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -28,12 +31,11 @@ public class SecurityConfig {
                 .authorizeRequests(authorize -> authorize
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/user/**").hasAnyAuthority("ADMIN", "USER")
-                        .anyRequest().hasAuthority("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .successHandler(successHandler)
                         .permitAll()
+                        .successHandler(successHandler)
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
