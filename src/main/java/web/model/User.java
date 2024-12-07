@@ -32,13 +32,17 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Collection<Role> roles;
 
+    @Column(name = "age")
+    private Integer age;
+
     public User() {}
 
-    public User(String firstName, String lastName, String email, Collection<Role> roles) {
+    public User(String firstName, String lastName, String email, Integer age, Collection<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.roles = roles;
+        this.age = age;
     }
 
     public Long getId() {
@@ -90,7 +94,13 @@ public class User implements UserDetails {
         this.roles = roles;
     }
 
+    public Integer getAge() {
+        return age;
+    }
 
+    public void setAge(Integer age) {
+        this.age = age;
+    }
 
     @Override
     public String toString() {
@@ -101,6 +111,7 @@ public class User implements UserDetails {
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 ", roles=" + roles +
+                ", age=" + age +
                 '}';
     }
 

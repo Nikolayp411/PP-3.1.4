@@ -47,13 +47,13 @@ public class DataInitializer {
 
         if (userRole != null && adminRole != null) {
             List<User> users = Arrays.asList(
-                    createUser ("John", "Doe", "john.doe@example.com", "password123", userRole),
-                    createUser ("Jane", "Doe", "jane.doe@example.com", "password123", userRole),
-                    createUser ("Mike", "Smith", "mike.smith@example.com", "password123", userRole),
-                    createUser ("Sara", "Johnson", "sara.johnson@example.com", "password123", userRole),
-                    createUser ("Tom", "Brown", "tom.brown@example.com", "adminpass", adminRole),
-                    createUser ("test", "user", "user@user", "user", userRole),
-                    createUser ("admin", "admin", "admin@admin", "admin", adminRole)
+                    createUser ("John", "Doe", "john.doe@example.com", "password123", userRole, 30),
+                    createUser ("Jane", "Doe", "jane.doe@example.com", "password123", userRole, 28),
+                    createUser ("Mike", "Smith", "mike.smith@example.com", "password123", userRole, 35),
+                    createUser ("Sara", "Johnson", "sara.johnson@example.com", "password123", userRole, 22),
+                    createUser ("Tom", "Brown", "tom.brown@example.com", "adminpass", adminRole, 40),
+                    createUser ("test", "user", "user@user", "user", userRole, 25),
+                    createUser ("admin", "admin", "admin@admin", "admin", adminRole, 45)
             );
 
             userRepository.saveAll(users);
@@ -62,8 +62,8 @@ public class DataInitializer {
         }
     }
 
-    private User createUser (String firstName, String lastName, String email, String password, Role role) {
-        User user = new User(firstName, lastName, email, List.of(role));
+    private User createUser (String firstName, String lastName, String email, String password, Role role, Integer age) {
+        User user = new User(firstName, lastName, email, age, List.of(role)); // Передаем age
         user.setPassword(passwordEncoder.encode(password));
         return user;
     }

@@ -3,41 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <title>User Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex; /* Use flexbox for layout */
+            margin: 0; /* Remove default margin */
+        }
+
+        .top-bar {
+            background-color: #555; /* Gray line */
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%; /* Full width */
+            position: fixed; /* Fix to the top */
+            top: 0; /* Align to top */
+            z-index: 1000; /* Ensure it's above other elements */
+        }
+
+        .logout-link {
+            color: white; /* Text color */
+            text-decoration: none; /* Remove underline */
+            padding: 5px 10px; /* Some padding */
+        }
+
+        .logout-link:hover {
+            background-color: transparent; /* No highlight */
+        }
+
+        .sidebar {
+            width: 200px; /* Fixed width for sidebar */
+            background-color: #f4f4f4; /* Light gray background */
+            padding: 15px; /* Padding inside sidebar */
+            position: fixed; /* Fix to the left */
+            top: 50px; /* Below the top bar */
+            bottom: 0; /* Extend to bottom */
+            overflow-y: auto; /* Enable scrolling if content exceeds height */
+        }
+
+        .content {
+            margin-left: 220px; /* Leave space for sidebar */
+            padding: 20px; /* Padding for content */
+            margin-top: 60px; /* Leave space for top bar */
+            flex-grow: 1; /* Allow content to grow */
+        }
+
+        button {
+            width: 100%; /* Full width for buttons */
+            padding: 10px; /* Padding for buttons */
+            margin: 5px 0; /* Margin between buttons */
+            background-color: #007bff; /* Bootstrap primary color */
+            color: white; /* White text */
+            border: none; /* No border */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Pointer cursor on hover */
+        }
+
+        button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        table {
+            width: 100%; /* Full width of content area */
+            margin-bottom: 20px;
+            border-collapse: collapse; /* Collapse borders */
+        }
+
+        th, td {
+            border: 1px solid #ccc; /* Light gray border */
+            padding: 8px; /* Padding for table cells */
+            text-align: left; /* Align text to the left */
+        }
+    </style>
 </head>
 <body>
 
-<form action="/logout" method="post" style="display:inline;">
-    <button type="submit">Logout</button>
-</form>
+<div class="top-bar">
+    <div class="user-info">
+        <span th:text="${currentUser.username}">Username</span> |
+        <span th:each="role : ${currentUser.authorities}" th:text="${role.authority}">Role</span>
+    </div>
+    <a href="/logout" class="logout-link">Logout</a>
+</div>
 
-<h3>User Profile</h3>
-<table border="1" cellpadding="5" cellspacing="0" style="width: 30%; margin-bottom: 20px;">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Last Name</th>
-        <th>Email</th>
-        <th>Roles</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td th:text="${user.id}">ID</td>
-        <td th:text="${user.firstName}">Name</td>
-        <td th:text="${user.lastName}">Last Name</td>
-        <td th:text="${user.email}">Email</td>
-        <td>
-            <span th:if="${user.roles != null && !#lists.isEmpty(user.roles)}">
-                <span th:each="role, iterStat : ${user.roles}">
-                    <span th:text="${role.name}">Role</span>
-                    <span th:if="${iterStat.index < user.roles.size() - 1}">, </span>
+<div class="sidebar">
+    <h4>Available Pages</h4>
+    <div th:each="page : ${availablePages}"> <!-- Dynamic button generation -->
+        <button th:data-url="${page.url}" th:text="${page.name}" onclick="location.href=this.dataset.url"></button>
+    </div>
+</div>
+
+<div class="content">
+    <h3>User Profile</h3>
+    <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; margin-bottom: 20px;">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Age</th>
+            <th>Roles</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td th:text="${user.id}">ID</td>
+            <td th:text="${user.firstName}">Name</td>
+            <td th:text="${user.lastName}">Last Name</td>
+            <td th:text="${user.email}">Email</td>
+            <td th:text="${user.age}">Age</td>
+            <td>
+                <span th:if="${user.roles != null && !#lists.isEmpty(user.roles)}">
+                    <span th:each="role, iterStat : ${user.roles}">
+                        <span th:text="${role.name}">Role</span>
+                        <span th:if="${iterStat.index < user.roles.size() - 1}">, </span>
+                    </span>
                 </span>
-            </span>
-            <span th:if="${user.roles == null || #lists.isEmpty(user.roles)}">No roles assigned</span>
-        </td>
-    </tr>
-    </tbody>
-</table>
+                <span th:if="${user.roles == null || #lists.isEmpty(user.roles)}">No roles assigned</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
 </body>
 </html>
