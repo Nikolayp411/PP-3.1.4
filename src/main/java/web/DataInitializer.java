@@ -2,6 +2,7 @@ package web;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import web.model.Role;
 import web.repository.RoleRepository;
@@ -17,14 +18,15 @@ public class DataInitializer {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public DataInitializer(UserRepository userRepository, RoleRepository roleRepository, BCryptPasswordEncoder passwordEncoder) {
+    public DataInitializer(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
+
 
     @PostConstruct
     public void init() {
@@ -63,7 +65,7 @@ public class DataInitializer {
     }
 
     private User createUser (String firstName, String lastName, String email, String password, Role role, Integer age) {
-        User user = new User(firstName, lastName, email, age, List.of(role)); // Передаем age
+        User user = new User(firstName, lastName, email, age, List.of(role));
         user.setPassword(passwordEncoder.encode(password));
         return user;
     }

@@ -1,7 +1,6 @@
 package web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,8 +15,11 @@ import java.util.List;
 @Controller
 public class UserProfileController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public UserProfileController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/user")
     public String userProfile(Model model, Authentication authentication) {
@@ -30,18 +32,17 @@ public class UserProfileController {
 
         model.addAttribute("user", user);
 
-        User currentUser  = userService.findByEmail(email); // Fetching current user again for the top bar
+        User currentUser  = userService.findByEmail(email);
         model.addAttribute("currentUser", currentUser );
 
-        // Формируем список доступных страниц для пользователя
         List<AppPage> availablePages = new ArrayList<>();
-        availablePages.add(new AppPage("/user", "Profile"));
         if (user.getRoles().stream().anyMatch(role -> role.getName().equals("ADMIN"))) {
-            availablePages.add(new AppPage("/admin", "Admin Panel"));
+            availablePages.add(new AppPage("/admin", "Admin"));
         }
-        // Добавьте другие страницы для пользователя
+        availablePages.add(new AppPage("/user", "User"));
 
         model.addAttribute("availablePages", availablePages);
+        model.addAttribute("currentPageUrl", "/user");
 
         return "user";
     }

@@ -1,6 +1,7 @@
 package web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,7 +16,9 @@ import web.service.UserService;
 import web.service.RoleService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
@@ -39,8 +42,8 @@ public class AdminProfileController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            UserDetails currentUser  = (UserDetails) authentication.getPrincipal();
-            model.addAttribute("currentUser", currentUser );
+            UserDetails currentUser = (UserDetails) authentication.getPrincipal();
+            model.addAttribute("currentUser", currentUser);
         }
 
         List<User> users = userService.listUsers();
@@ -50,50 +53,57 @@ public class AdminProfileController {
         model.addAttribute("roles", roles);
 
         List<AppPage> availablePages = new ArrayList<>();
-        availablePages.add(new AppPage("/admin", "Admin Panel"));
-        availablePages.add(new AppPage("/user", "User  Profile"));
+        availablePages.add(new AppPage("/admin", "Admin"));
+        availablePages.add(new AppPage("/user", "User"));
         model.addAttribute("availablePages", availablePages);
+        model.addAttribute("currentPageUrl", "/admin");
 
-        model.addAttribute("view", view); // Убедитесь, что view передается в модель
+        model.addAttribute("view", view);
         return "admin";
     }
 
+    @GetMapping("/getUser")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getUser (@RequestParam Long id) {
+        User user = userService.getUserById(id);
+        List<Role> availableRoles = roleService.listRoles();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("user", user);
+        response.put("availableRoles", availableRoles);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+
     @PostMapping
-    public String addUser (@ModelAttribute("user") User user,
-                           @RequestParam("password") String password,
-                           @RequestParam("roleIds") List<Long> roleIds) {
+    public String addUser(@ModelAttribute("user") User user,
+                          @RequestParam("password") String password,
+                          @RequestParam("roleIds") List<Long> roleIds) {
         user.setRoles(roleService.getRolesById(roleIds));
         user.setPassword(passwordEncoder.encode(password));
-        userService.addUser (user);
+        userService.addUser(user);
         return "redirect:/admin";
     }
 
     @PostMapping("/deleteUser")
-    public String deleteUser (@RequestParam("userId") Long userId) {
+    public ResponseEntity<Void> deleteUser (@RequestBody Map<String, Long> payload) {
+        Long userId = payload.get("userId");
         userService.deleteUser (userId);
-        return "redirect:/admin";
+        return ResponseEntity.ok().build();
     }
-
-    @GetMapping("/editUser")
-    public String showEditUserForm(@RequestParam("userId") Long id, Model model) {
-        User user = userService.getUserById(id);
-        model.addAttribute("user", user);
-        List<Role> roles = roleService.listRoles();
-        model.addAttribute("roles", roles);
-
-        return "editUser";
-    }
-
 
     @PostMapping("/updateUser")
-    public String updateUser (@ModelAttribute("user") User user,
-                              @RequestParam("password") String password,
-                              @RequestParam("roleIds") List<Long> roleIds) {
+    public String updateUser(@ModelAttribute("user") User user,
+                             @RequestParam("password") String password,
+                             @RequestParam("roleIds") List<Long> roleIds) {
         user.setRoles(roleService.getRolesById(roleIds));
         if (password != null && !password.isEmpty()) {
             user.setPassword(passwordEncoder.encode(password));
         }
-        userService.updateUser (user);
+        userService.updateUser(user);
         return "redirect:/admin";
     }
 }
+

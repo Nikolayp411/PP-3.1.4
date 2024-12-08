@@ -3,125 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Panel</title>
-    <style>
-        /* Стили остаются прежними */
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            margin: 0;
-        }
+    <link href="/css/style.css" th:href="@{/css/style.css}" rel="stylesheet" type="text/css">
 
-        .top-bar {
-            background-color: #555;
-            color: white;
-            padding: 10px;
-            width: 100%;
-            position: fixed;
-            top: 0;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .user-info {
-            margin-right: auto;
-        }
-
-        .logout-link {
-            color: white;
-            text-decoration: none;
-            padding: 5px 10px;
-            background-color: #d9534f;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .logout-link:hover {
-            background-color: #c9302c;
-        }
-
-        .sidebar {
-            width: 200px;
-            background-color: #f4f4f4;
-            padding: 15px;
-            position: fixed;
-            top: 50px;
-            bottom: 0;
-            overflow-y: auto;
-        }
-
-        .content {
-            margin-left: 220px;
-            padding: 20px;
-            margin-top: 60px;
-            flex-grow: 1;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .sidebar button {
-            padding: 5px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .sidebar button:hover {
-            background-color: #0056b3;
-        }
-
-        table {
-            width: 100%;
-            margin-bottom: 20px;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-    </style>
 </head>
 <body>
 
 <div class="top-bar">
     <div class="user-info">
         <span th:text="${currentUser .username}">Username</span> |
-        <span th:each="role : ${currentUser .authorities}" th:text="${role.authority}">Role</span>
+        <span th:each="role, iterStat : ${currentUser .authorities}">
+            <span th:text="${role.authority}"></span>
+            <span th:if="${iterStat.index < currentUser .authorities.size() - 1}">, </span>
+        </span>
     </div>
     <button class="logout-link" onclick="window.location.href='/logout'">Logout</button>
 </div>
 
 <div class="sidebar">
-    <h4>Available Pages</h4>
     <div th:each="page : ${availablePages}">
-        <button th:data-url="${page.url}" th:text="${page.name}" onclick="location.href=this.dataset.url"></button>
+        <button
+                th:data-url="${page.url}"
+                th:text="${page.name}"
+                th:class="${page.url == currentPageUrl ? 'active-button' : ''}"
+                onclick="location.href=this.dataset.url"></button>
     </div>
 </div>
 
 <div class="content">
-    <h3>Admin Panel</h3>
-
+    <h1>Admin Panel</h1>
     <div class="button-container">
         <form action="#" method="get" style="display: flex; width: 100%;">
-            <button type="submit" name="view" value="table">Users Table</button>
-            <button type="submit" name="view" value="form">New User</button>
+            <button type="submit" name="view" value="table" class="action-button">Users Table</button>
+            <button type="submit" name="view" value="form" class="action-button">New User</button>
         </form>
     </div>
 
     <div th:if="${view == 'table'}" id="usersTable">
-        <h3>Users</h3>
+        <h3>All users</h3>
         <table border="1" cellpadding="5" cellspacing="0">
             <thead>
             <tr>
@@ -152,15 +70,12 @@
                     <span th:if="${user.roles == null || #lists.isEmpty(user.roles)}">No roles assigned</span>
                 </td>
                 <td>
-                    <form action="/admin/editUser" method="get" style="display:inline;">
-                        <input type="hidden" name="userId" th:value="${user.id}"/>
-                        <button type="submit">Edit</button>
-                    </form>
+                    <button type="button" th:attr="data-user-id=${user.id}" class="edit-button">Edit</button>
                 </td>
                 <td>
                     <form action="/admin/deleteUser" method="post" style="display:inline;">
                         <input type="hidden" name="userId" th:value="${user.id}"/>
-                        <button type="submit">Delete</button>
+                        <button type="button" class="delete-button">Delete</button>
                     </form>
                 </td>
             </tr>
@@ -168,48 +83,128 @@
         </table>
     </div>
 
-    <div th:if="${view == 'form'}" id="addUser Form" class="form-container">
-        <h3>Add User</h3>
+    <div th:if="${view == 'form'}" class="add-user-form">
+        <h3>Add New User</h3>
         <form action="/admin" method="POST">
-            <table>
-                <tr>
-                    <td><label for="firstName">First Name:</label></td>
-                    <td><input type="text" id="firstName" name="firstName" required placeholder="Enter first name"></td>
-                </tr>
-                <tr>
-                    <td><label for="lastName">Last Name:</label></td>
-                    <td><input type="text" id="lastName" name="lastName" required placeholder="Enter last name"></td>
-                </tr>
-                <tr>
-                    <td><label for="email">Email:</label></td>
-                    <td><input type="email" id="email" name="email" required placeholder="Enter email"></td>
-                </tr>
-                <tr>
-                    <td><label for="age">Age:</label></td>
-                    <td><input type="number" id="age" name="age" required min="0" placeholder="Enter age"></td>
-                </tr>
-                <tr>
-                    <td><label>Roles:</label></td>
-                    <td>
-                        <div th:each="role : ${roles}">
-                            <input type="checkbox" th:value="${role.id}" th:id="'role_' + ${role.id}" name="roleIds" />
-                            <label th:for="'role_' + ${role.id}" th:text="${role.name}">Role</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label for="password">Password:</label></td>
-                    <td><input type="password" id="password" name="password" required placeholder="Enter password"></td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <button type="submit" name="action" value="add">Add User</button>
-                    </td>
-                </tr>
-            </table>
+            <div class="form-group">
+                <label for="firstName">First Name:</label>
+                <input type="text" id="firstName" name="firstName" required placeholder="Enter first name">
+            </div>
+            <div class="form-group">
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="lastName" name="lastName" required placeholder="Enter last name">
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required placeholder="Enter email">
+            </div>
+            <div class="form-group">
+                <label for="age">Age:</label>
+                <input type="number" id="age" name="age" required min="0" placeholder="Enter age">
+            </div>
+            <div class="form-group">
+                <label for="roles">Roles:</label>
+                <select id="roles" name="roleIds" multiple class="roles-dropdown">
+                    <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}">Role</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required placeholder="Enter password">
+            </div>
+            <div class="form-group">
+                <button type="submit" name="action" value="add" class="add-user-button">Add User</button>
+            </div>
         </form>
     </div>
 </div>
 
+<div id="editUserModal">
+    <div class="modal-content">
+        <h3>Edit User</h3>
+        <hr>
+        <form id="editUserForm" method="POST" action="/admin/updateUser">
+            <input type="hidden" name="id" id="editUserId"/>
+
+            <div class="form-group">
+                <label for="fakeUserId">User  ID:</label>
+                <input type="text" id="fakeUserId" name="fakeUserId" disabled>
+            </div>
+            <div class="form-group">
+                <label for="editFirstName">First Name:</label>
+                <input type="text" id="editFirstName" name="firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="editLastName">Last Name:</label>
+                <input type="text" id="editLastName" name="lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="editAge">Age:</label>
+                <input type="number" id="editAge" name="age" required>
+            </div>
+            <div class="form-group">
+                <label for="editEmail">Email:</label>
+                <input type="email" id="editEmail" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="editRoles">Roles:</label>
+                <select id="editRoles" name="roleIds" multiple class="roles-dropdown">
+
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editPassword">Password:</label>
+                <input type="password" id="editPassword" name="password" required>
+            </div>
+
+            <hr>
+            <div class="button-wrapper" style="display: flex; justify-content: flex-end;">
+                <button type="button" onclick="closeModal()">Close</button>
+                <button type="submit" style="background-color: #40e0d0; color: white;">Edit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteUserModal">
+    <div class="modal-content">
+        <button class="close-button" onclick="closeDeleteModal()">✖</button>
+        <h3>Confirm Deletion</h3>
+        <hr>
+        <form id="deleteUserForm">
+            <div class="form-group">
+                <label for="deleteUserId">User  ID:</label>
+                <input type="text" id="deleteUserId" name="userId" disabled>
+            </div>
+            <div class="form-group">
+                <label for="deleteUserFirstName">First Name:</label>
+                <input type="text" id="deleteUserFirstName" name="firstName" disabled>
+            </div>
+            <div class="form-group">
+                <label for="deleteUserLastName">Last Name:</label>
+                <input type="text" id="deleteUserLastName" name="lastName" disabled>
+            </div>
+            <div class="form-group">
+                <label for="deleteUserEmail">Email:</label>
+                <input type="email" id="deleteUserEmail" name="email" disabled>
+            </div>
+            <div class="form-group">
+                <label for="deleteUserAge">Age:</label>
+                <input type="number" id="deleteUserAge" name="age" disabled>
+            </div>
+            <div class="form-group">
+                <label>Roles:</label>
+                <select id="deleteUserRoles" name="roles" multiple disabled></select>
+            </div>
+        </form>
+        <hr>
+        <div class="button-container" style="justify-content: flex-end;">
+            <button onclick="closeDeleteModal()" class="cancel-button">Cancel</button>
+            <button id="confirmDeleteButton" class="delete-button">Delete User</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/adminPanel.js"></script>
 </body>
 </html>
