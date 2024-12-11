@@ -10,4 +10,5 @@ public interface UserService {
     void deleteUser (Long userId);
     User getUserById(Long userId);
     User findByEmail(String email);
+    User getCurrentUser ();
 }
