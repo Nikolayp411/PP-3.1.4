@@ -1,7 +1,7 @@
 package web.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,9 +10,7 @@ import web.model.User;
 import web.service.PageService;
 import web.service.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -27,10 +25,10 @@ public class UserProfileController {
         this.pageService = pageService;
     }
 
+
     @GetMapping("/user")
     public ResponseEntity<User> getUser() {
-        User user = userService.getCurrentUser();
-        return ResponseEntity.ok(user);
+        return new ResponseEntity<> (userService.getCurrentUser(), HttpStatus.OK);
     }
 
     @GetMapping("/available-pages")
@@ -38,4 +36,6 @@ public class UserProfileController {
         List<AppPage> availablePages = pageService.getAvailablePages(userService.getCurrentUser());
         return ResponseEntity.ok(availablePages);
     }
+
+
 }

@@ -19,7 +19,7 @@ public class SuccessUserHandler implements AuthenticationSuccessHandler {
         if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"))) {
             redirectUrl = "/admin";
         } else if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("USER"))) {
-            redirectUrl = "/api/user";
+            redirectUrl = "/user";
         } else {
             redirectUrl = "/api";
         }

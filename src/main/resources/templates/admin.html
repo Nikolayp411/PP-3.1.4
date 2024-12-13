@@ -10,23 +10,13 @@
 
 <div class="top-bar">
     <div class="user-info">
-        <span th:text="${currentUser .username}">Username</span> |
-        <span th:each="role, iterStat : ${currentUser .authorities}">
-            <span th:text="${role.authority}"></span>
-            <span th:if="${iterStat.index < currentUser .authorities.size() - 1}">, </span>
-        </span>
+        <span id="username">Username</span> with roles:
+        <span id="top_roles">Roles</span>
     </div>
-    <button class="logout-link" onclick="window.location.href='/logout'">Logout</button>
+    <a href="/logout" class="logout-link">Logout</a>
 </div>
 
 <div class="sidebar">
-    <div th:each="page : ${availablePages}">
-        <button
-                th:data-url="${page.url}"
-                th:text="${page.name}"
-                th:class="${page.url == currentPageUrl ? 'active-button' : ''}"
-                onclick="location.href=this.dataset.url"></button>
-    </div>
 </div>
 
 <div class="content">
@@ -37,10 +27,9 @@
             <button type="submit" name="view" value="form" class="action-button">New User</button>
         </form>
     </div>
-
-    <div th:if="${view == 'table'}" id="usersTable">
-        <h3>All users</h3>
-        <table border="1" cellpadding="5" cellspacing="0">
+    <h3>All Users</h3>
+    <div id="users-table-container">
+        <table border="1" cellpadding="5" cellspacing="0" id="usersTable">
             <thead>
             <tr>
                 <th>ID</th>
@@ -54,76 +43,51 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="user : ${users}">
-                <td th:text="${user.id}">ID</td>
-                <td th:text="${user.firstName}">Name</td>
-                <td th:text="${user.lastName}">Last Name</td>
-                <td th:text="${user.email}">Email</td>
-                <td th:text="${user.age}">Age</td>
-                <td>
-                    <span th:if="${user.roles != null && !#lists.isEmpty(user.roles)}">
-                        <span th:each="role, iterStat : ${user.roles}">
-                            <span th:text="${role.name}">Role</span>
-                            <span th:if="${iterStat.index < user.roles.size() - 1}">, </span>
-                        </span>
-                    </span>
-                    <span th:if="${user.roles == null || #lists.isEmpty(user.roles)}">No roles assigned</span>
-                </td>
-                <td>
-                    <button type="button" th:attr="data-user-id=${user.id}" class="edit-button">Edit</button>
-                </td>
-                <td>
-                    <form action="/admin/deleteUser" method="post" style="display:inline;">
-                        <input type="hidden" name="userId" th:value="${user.id}"/>
-                        <button type="button" class="delete-button">Delete</button>
-                    </form>
-                </td>
-            </tr>
             </tbody>
         </table>
     </div>
 
-    <div th:if="${view == 'form'}" class="add-user-form">
-        <h3>Add New User</h3>
-        <form action="/admin" method="POST">
+    <div id="new-user-form-container" style="display: none;">
+        <form id="addUserForm" class="add-user-form">
+            <h3>Add New User</h3>
             <div class="form-group">
                 <label for="firstName">First Name:</label>
-                <input type="text" id="firstName" name="firstName" required placeholder="Enter first name">
+                <input type="text" id="firstName" name="firstName" required>
             </div>
             <div class="form-group">
                 <label for="lastName">Last Name:</label>
-                <input type="text" id="lastName" name="lastName" required placeholder="Enter last name">
+                <input type="text" id="lastName" name="lastName" required>
             </div>
             <div class="form-group">
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required placeholder="Enter email">
+                <input type="email" id="email" name="email" required>
             </div>
             <div class="form-group">
                 <label for="age">Age:</label>
-                <input type="number" id="age" name="age" required min="0" placeholder="Enter age">
-            </div>
-            <div class="form-group">
-                <label for="roles">Roles:</label>
-                <select id="roles" name="roleIds" multiple class="roles-dropdown">
-                    <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}">Role</option>
-                </select>
+                <input type="number" id="age" name="age" required>
             </div>
             <div class="form-group">
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required placeholder="Enter password">
+                <input type="password" id="password" name="password" required>
             </div>
             <div class="form-group">
-                <button type="submit" name="action" value="add" class="add-user-button">Add User</button>
+                <label for="roles_to_add">Roles:</label>
+                <select id="roles_to_add" multiple class="roles-dropdown">
+                </select>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="add-user-button">Add User</button>
             </div>
         </form>
     </div>
 </div>
 
+
 <div id="editUserModal">
     <div class="modal-content">
         <h3>Edit User</h3>
         <hr>
-        <form id="editUserForm" method="POST" action="/admin/updateUser">
+        <form id="editUserForm" method="POST" action="/api/admin/updateUser">
             <input type="hidden" name="id" id="editUserId"/>
 
             <div class="form-group">
@@ -173,7 +137,7 @@
         <hr>
         <form id="deleteUserForm">
             <div class="form-group">
-                <label for="deleteUserId">User  ID:</label>
+                <label for="deleteUserId">User ID:</label>
                 <input type="text" id="deleteUserId" name="userId" disabled>
             </div>
             <div class="form-group">
@@ -205,6 +169,11 @@
     </div>
 </div>
 
+<script src="/js/adminBtns.js"></script>
 <script src="/js/adminPanel.js"></script>
+<script src="/js/addAdmin.js"></script>
+<script src="/js/editAdmin.js"></script>
+<script src="/js/deleteAdmin.js"></script>
+<script src="/js/adminFetch.js"></script>
 </body>
 </html>

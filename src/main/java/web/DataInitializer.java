@@ -55,7 +55,8 @@ public class DataInitializer {
                     createUser ("Sara", "Johnson", "sara.johnson@example.com", "password123", userRole, 22),
                     createUser ("Tom", "Brown", "tom.brown@example.com", "adminpass", adminRole, 40),
                     createUser ("test", "user", "user@user", "user", userRole, 25),
-                    createUser ("admin", "admin", "admin@admin", "admin", adminRole, 45)
+                    createUser ("admin", "admin", "admin@admin", "admin", List.of(userRole, adminRole), 45),
+                    createUser ("admin2", "admin2", "admin2@admin2", "admin2", adminRole, 42)
             );
 
             userRepository.saveAll(users);
@@ -66,6 +67,12 @@ public class DataInitializer {
 
     private User createUser (String firstName, String lastName, String email, String password, Role role, Integer age) {
         User user = new User(firstName, lastName, email, age, List.of(role));
+        user.setPassword(passwordEncoder.encode(password));
+        return user;
+    }
+
+    private User createUser (String firstName, String lastName, String email, String password, List<Role> roles, Integer age) {
+        User user = new User(firstName, lastName, email, age, roles);
         user.setPassword(passwordEncoder.encode(password));
         return user;
     }

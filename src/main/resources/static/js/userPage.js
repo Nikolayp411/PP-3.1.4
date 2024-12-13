@@ -1,5 +1,6 @@
 $(document).ready(function() {
     fetchUserData();
+    fetchAvailablePages()
 });
 
 function fetchUserData() {
@@ -26,3 +27,30 @@ function fetchUserData() {
         })
         .catch(error => console.error('Error fetching user data:', error));
 }
+function fetchAvailablePages() {
+    const currentPageUrl = window.location.pathname
+    fetch('/api/available-pages')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(pages => {
+            const sidebar = $('.sidebar');
+            sidebar.empty();
+            pages.forEach(page => {
+                sidebar.append(`
+                    <button
+                        data-url="${page.url}"
+                        class="${page.url === currentPageUrl ? 'active-button' : ''}"
+                        onclick="location.href=this.dataset.url">
+                        ${page.name}
+                    </button>
+                `);
+            });
+        })
+        .catch(error => console.error('Error fetching available pages:', error));
+}
+
+

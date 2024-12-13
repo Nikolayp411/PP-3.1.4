@@ -1,70 +1,59 @@
 package web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import web.model.AppPage;
 import web.model.Role;
 import web.model.User;
+import web.repository.UserRepository;
+import web.service.PageService;
 import web.service.UserService;
 import web.service.RoleService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-@Controller
-@RequestMapping("/admin")
+@RestController
+@RequestMapping("/api/admin")
 public class AdminProfileController {
 
     private final UserService userService;
     private final RoleService roleService;
-    private final PasswordEncoder passwordEncoder;
+    private final PageService pageService;
+    private final UserRepository userRepository;
 
     @Autowired
     public AdminProfileController(UserService userService,
                                   RoleService roleService,
-                                  PasswordEncoder passwordEncoder) {
+                                  PageService pageService,
+                                  UserRepository userRepository) {
         this.userService = userService;
         this.roleService = roleService;
-        this.passwordEncoder = passwordEncoder;
+        this.pageService = pageService;
+        this.userRepository = userRepository;
     }
 
-    @GetMapping
-    public String adminPanel(@RequestParam(value = "view", required = false, defaultValue = "table") String view, Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    @GetMapping("/current-user")
+    public ResponseEntity<User> getCurrentUser () {
+        return ResponseEntity.ok(userService.getCurrentUser ());
+    }
 
-        if (authentication != null && authentication.isAuthenticated()) {
-            UserDetails currentUser = (UserDetails) authentication.getPrincipal();
-            model.addAttribute("currentUser", currentUser);
-        }
+    @GetMapping("/available-pages")
+    public ResponseEntity<List<AppPage>> getAvailablePages() {
+        List<AppPage> availablePages = pageService.getAvailablePages(userService.getCurrentUser ());
+        return ResponseEntity.ok(availablePages);
+    }
 
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> listUsers() {
         List<User> users = userService.listUsers();
-        model.addAttribute("users", users);
-        model.addAttribute("user", new User());
-        List<Role> roles = roleService.listRoles();
-        model.addAttribute("roles", roles);
-
-        List<AppPage> availablePages = new ArrayList<>();
-        availablePages.add(new AppPage("/admin", "Admin"));
-        availablePages.add(new AppPage("/user", "User"));
-        model.addAttribute("availablePages", availablePages);
-        model.addAttribute("currentPageUrl", "/admin");
-
-        model.addAttribute("view", view);
-        return "admin";
+        return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/getUser")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> getUser (@RequestParam Long id) {
+    @GetMapping("/getUser/{id}")
+    public ResponseEntity<Map<String, Object>> getUser (@PathVariable Long id) {
         User user = userService.getUserById(id);
         List<Role> availableRoles = roleService.listRoles();
 
@@ -75,16 +64,19 @@ public class AdminProfileController {
         return ResponseEntity.ok(response);
     }
 
-
-
-    @PostMapping
-    public String addUser(@ModelAttribute("user") User user,
-                          @RequestParam("password") String password,
-                          @RequestParam("roleIds") List<Long> roleIds) {
-        user.setRoles(roleService.getRolesById(roleIds));
-        user.setPassword(passwordEncoder.encode(password));
-        userService.addUser(user);
-        return "redirect:/admin";
+    @PostMapping("/addUser")
+    public ResponseEntity<Void> addUser (@RequestBody User user) {
+        System.out.println("Attempting to add user: " + user);
+        try {
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            user.setPassword(passwordEncoder.encode(new String(Base64.getDecoder().decode(user.getPassword()))));
+            userService.addUser (user);
+            System.out.println("User  added successfully.");
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (Exception e) {
+            System.err.println("Error adding user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/deleteUser")
@@ -94,16 +86,45 @@ public class AdminProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/updateUser")
-    public String updateUser(@ModelAttribute("user") User user,
-                             @RequestParam("password") String password,
-                             @RequestParam("roleIds") List<Long> roleIds) {
-        user.setRoles(roleService.getRolesById(roleIds));
-        if (password != null && !password.isEmpty()) {
-            user.setPassword(passwordEncoder.encode(password));
+    @PutMapping("/updateUser/{userId}")
+    public ResponseEntity<String> updateUser(@PathVariable Long userId, @RequestBody User user) {
+
+        if (user.getId() == null) {
+            return ResponseEntity.badRequest().body("The given id must not be null");
         }
-        userService.updateUser(user);
-        return "redirect:/admin";
+
+        User existingUser  = userRepository.findById(userId).orElseThrow();
+
+        existingUser.setFirstName(user.getFirstName());
+        existingUser.setLastName(user.getLastName());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setAge(user.getAge());
+        existingUser.setRoles(user.getRoles());
+
+        List<Role> updatedRoles = new ArrayList<>();
+        for (Role role : user.getRoles()) {
+            if (role.getId() == null) {
+                return ResponseEntity.badRequest().body("Role ID must not be null");
+            }
+            Role existingRole = roleService.getRoleById(role.getId());
+            updatedRoles.add(existingRole);
+        }
+        existingUser.setRoles(updatedRoles);
+
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            String hashedPassword = passwordEncoder.encode(user.getPassword());
+            existingUser .setPassword(hashedPassword);
+        }
+
+        userRepository.save(existingUser);
+
+        return ResponseEntity.ok("{\"message\":\"User  updated successfully\"}");
+    }
+
+    @GetMapping("/roles")
+    public ResponseEntity<List<Role>> getRoles() {
+        List<Role> roles = roleService.listRoles();
+        return ResponseEntity.ok(roles);
     }
 }
-
